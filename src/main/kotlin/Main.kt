@@ -87,8 +87,16 @@ fun <T> Iterable<Iterable<T>>.transpose(): List<List<T>> {
     }
 }
 
+fun <A, B, X, Y> Pair<A, B>.manipulateTuple(l: (A, B) -> Pair<X, Y>): Pair<X, Y> =
+    l(first, second)
 
+fun <A, B, C, X, Y, Z> Triple<A, B, C>.manipulateTriple(l: (A, B, C) -> Triple<X, Y, Z>): Triple<X, Y, Z> =
+    l(first, second, third)
 
+fun <T> List<T>.twoElements(): Pair<T, T> {
+    val (a, b) = this
+    return a to b
+}
 
 fun <T> permutations(input: List<T>, length: Int): List<List<T/*size=length*/>> {
     if(length == 0) return input.map { emptyList() }
