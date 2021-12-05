@@ -39,7 +39,8 @@ fun main() {
                 iterator.remove()
                 val sumOfUnmarked = board.squares.flatten().filter { it !in called }.sum()
                 sol = sumOfUnmarked * bingoNumber
-                // for part one, exit early here. For part two, continue til the last board is removed
+                // For part one, exit early here
+                // For part two, continue til the last board is removed (comment the line out)
                 break@outer
             }
         }
