@@ -27,6 +27,8 @@ fun input(day: Int, year: Int = 2020): String {
 }
 
 
+infix fun Int.rangeTo(to: Int) = if(this < to) this..to else this downTo to
+
 fun inputLines(day: Int, year: Int = 2020, filterBlank: Boolean = true): List<String> =
     input(day, year)
         .split("\n")
