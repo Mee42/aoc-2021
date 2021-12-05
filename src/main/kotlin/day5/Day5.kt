@@ -6,6 +6,8 @@ import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 val test = """
 0,9 -> 5,9
@@ -20,8 +22,7 @@ val test = """
 5,5 -> 8,2
 """.trimIndent()
 
-fun main() {
-    val partTwo = true
+fun main(part: Part) {
 
     val input =
         input(day = 5, year = 2021)
@@ -39,13 +40,11 @@ fun main() {
             for (y in y1 rangeTo y2) {
                 board[point(x1, y)]++
             }
-        }
-        if (y1 == y2) {
+        } else if (y1 == y2) {
             for (x in x1 rangeTo x2) {
                 board[point(x, y1)]++
             }
-        }
-        if (partTwo && ((y1 - y2).absoluteValue == (x1 - x2).absoluteValue)) {
+        } else if (part == Part.TWO) { // is diagonal
             (x1 rangeTo x2).zip(y1 rangeTo y2).map { (x, y) ->
                 board[point(x, y)]++
             }
@@ -65,4 +64,9 @@ fun main() {
 
     val sol = board.toList().count { it > 1 }
     println(sol)
+}
+
+fun main() {
+    main(Part.ONE)
+    main(Part.TWO)
 }
