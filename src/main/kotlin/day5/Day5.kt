@@ -57,7 +57,8 @@ fun main() {
         image.setRGB(coords.x, coords.y, when(value) {
             0 -> Color.BLACK
             1 -> Color.RED
-            else -> Color.GREEN
+            2 -> Color.YELLOW
+            else -> Color.MAGENTA
         }.rgb)
     }
     ImageIO.write(image, "png", File("build/out.png"))
