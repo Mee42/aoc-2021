@@ -51,6 +51,9 @@ fun int(str: String): Int {
     return str.toInt()
 }
 
+fun c_plus(a: Int): (Int) -> Int = { it + a }
+fun c_plus(a: Long): (Long) -> Long = { it + a}
+
 fun <T> T.apIf(conditional: Boolean, block: (T) -> T): T = if(conditional) block(this) else this
 
 enum class Part { ONE, TWO }
