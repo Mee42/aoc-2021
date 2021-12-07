@@ -66,6 +66,12 @@ fun <T> List<T>.foldSameType(folder: (T, T) -> T, ifSizeIsZero: T? = null): T {
     }
     return value
 }
+
+fun List<Int>.min(): Int = this.minOrNull() ?: error("No elements")
+fun List<Int>.max(): Int = this.maxOrNull() ?: error("No elements")
+fun <T> List<T>.minBy(f: (T) -> Int): T = this.minByOrNull(f) ?: error("No elements")
+fun <T> List<T>.maxBy(f: (T) -> Int): T = this.maxByOrNull(f) ?: error("No elements")
+
 fun <T, A> List<T>.foldr(acc: A, proc: (A, T) -> A): A {
     var x = acc
     for(elem in this) {
