@@ -1,7 +1,11 @@
 package dev.mee42
 
 
-data class Coords2D(val x: Int, val y: Int)
+data class Coords2D(val x: Int, val y: Int) {
+    operator fun plus(other: Coords2D): Coords2D {
+        return Coords2D(x + other.x, y + other.y)
+    }
+}
 data class Coords3D(val x: Int, val y: Int, val z: Int)
 data class Coords4D(val x: Int, val y: Int, val z: Int, val w: Int)
 
@@ -19,6 +23,8 @@ class Array2D<T> (val list: List<List<MutBox<T>>>): Iterable<T> {
 
     operator fun get(coords: Coords2D): T = getMutBox(coords).get()
     fun getMutBox(coords: Coords2D): MutBox<T> = list[coords.x][coords.y]
+    fun getOrNull(coords: Coords2D): T? = getMutBoxOrNull(coords)?.get()
+    fun getMutBoxOrNull(coords: Coords2D): MutBox<T>? = list.getOrNull(coords.x)?.getOrNull(coords.y)
 
     operator fun set(coords: Coords2D, value: T) = list[coords.x][coords.y].set(value)
 
@@ -63,6 +69,10 @@ class Array2D<T> (val list: List<List<MutBox<T>>>): Iterable<T> {
         })
     }
 
+    fun isInBound(coords: Coords2D): Boolean {
+        return coords.x in list.indices && coords.y in list[0].indices
+    }
+
     companion object {
         fun <T> initSquare(size: Int, default: (Coords2D) -> T): Array2D<T> {
             return init(size, size, default)
@@ -70,6 +80,10 @@ class Array2D<T> (val list: List<List<MutBox<T>>>): Iterable<T> {
 
         fun <T> init(xSize: Int, ySize: Int, default: (Coords2D) -> T): Array2D<T> {
             return Array2D(List(xSize) { x -> List(ySize) { y -> MutBox(default(Coords2D(x, y))) } })
+        }
+
+        fun <T> from(list: List<List<T>>): Array2D<T> {
+            return Array2D(list.map { it.map { x -> MutBox(x) } })
         }
     }
 

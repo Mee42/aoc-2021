@@ -9,44 +9,52 @@ val test = """
 9899965678
 """.trimIndent()
 
+fun <T> id(x: T) = x
+fun <T> l(vararg values: T): List<T> = values.toList()
+fun List<Int>.product() = this.fold(1) { a, b -> a * b }
+
+val CARDINAL_OFFSETS = l(point(-1, 0), point(1, 0), point(0, -1), point(0, 1))
+
+val CARDINAL_OFFSETS_INC_DIAGONALS = (-1..1).flatMap { a -> (-1..1).mapNotNull { b ->
+    if(a == 0 && b == 0) null else point(a, b)
+} }
+
+fun <T> T.println(name: String? = null): T {
+    if(name == null) println(this)
+    else System.out.println("$name: $this")
+    return this
+}
+
 fun main() {
-    val input = if(1 == 0) test.trim() else input(day = 9, year = 2021)
-    val input2 = input.trim().split("\n").map { it.map { x -> "$x".toInt() } }
-    input2.map { println(">$it") }
-    val smallestPoints = input2.flatMapIndexed { row, list ->
-        list.mapIndexed foo@{ col, value ->
-            val surrounding = listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1)
-            for ((rOff, cOff) in surrounding) {
-                val around = input2.getOrNull(row + rOff)?.getOrNull(col + cOff) ?: continue
-                if (around <= value) return@foo null
-            }
-            row to col
-        }
-    }.filterNotNull()
+    val inputRaw = if(1 == 0) test.trim() else input(day = 9, year = 2021)
+    val input = Array2D.from(inputRaw.trim().split("\n").map { it.map(::id) })
+        .map { c -> "$c".toInt() }
+
     // the size of a basin is trivial to find
-    fun sizeOfBasin(row: Int, col: Int, filled: List<List<MutBox<Boolean>>>, captureAbove: Int): Int {
-        if(row !in filled.indices || col !in filled[0].indices) return 0
-        if(filled[row][col].get()) return 0 // already counted square
-        if(input2[row][col] < captureAbove) {
-            return 0
-        }
-        if(input2[row][col] == 9) return 0
-        filled[row][col].set(true) // filled already
-        val surrounding = listOf(-1 to 0, 1 to 0, 0 to -1, 0 to 1)
-        val value = input2[row][col]
-        return surrounding.sumOf { (r, c) ->
-            sizeOfBasin(row + r, col + c, filled, value)
+    fun sizeOfBasin(pos: Coords2D, filled: Array2D<Boolean>, captureAbove: Int): Int {
+        if(!filled.isInBound(pos)) return 0
+        val value = input[pos]
+        if(filled[pos] || value < captureAbove || value == 9) return 0
+        filled[pos] = true
+        return CARDINAL_OFFSETS.sumOf { off ->
+            sizeOfBasin(pos + off, filled, value)
         } + 1
     }
 
-    val (a, b, c) = smallestPoints.map { (r, c) ->
-        val filled = input2.map { it.map { MutBox(false) } }
-        val x = (r to c) to sizeOfBasin(r, c, filled, 0)
-        println("$r, $c ->")
-        println()
-        x.second
-    }.sortedDescending().take(3)
-
-    println(a * b * c)
-
+    input.map { value, coords ->
+        for (off in CARDINAL_OFFSETS) {
+            val around = input.getOrNull(coords + off) ?: continue
+            if (around <= value) return@map null
+        }
+        return@map coords
+    }
+        .toList()
+        .filterNotNull()
+        .println("Lowest points")
+        .also { println("Part 1:" + it.sumOf { pos -> input[pos] }) }
+        .map { pos -> sizeOfBasin(pos, input.map { _ -> false }, 0) } // list of basin sizes
+        .sortedDescending()
+        .take(3)
+        .product()
+        .println("Solution")
 }
