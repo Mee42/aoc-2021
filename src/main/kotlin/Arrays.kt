@@ -12,7 +12,7 @@ fun point(x: Int, y: Int, z: Int, w: Int) = Coords4D(x, y, z, w)
 
 
 
-class Array2D<T> private constructor(val list: Array<Array<MutBox<T>>>): Iterable<T> {
+class Array2D<T> (val list: List<List<MutBox<T>>>): Iterable<T> {
 
     fun xSize() = list.size
     fun ySize() = list[0].size
@@ -59,8 +59,8 @@ class Array2D<T> private constructor(val list: Array<Array<MutBox<T>>>): Iterabl
                         Coords2D(x, y)
                     )
                 )
-            }.toTypedArray()
-        }.toTypedArray())
+            }
+        })
     }
 
     companion object {
@@ -69,7 +69,7 @@ class Array2D<T> private constructor(val list: Array<Array<MutBox<T>>>): Iterabl
         }
 
         fun <T> init(xSize: Int, ySize: Int, default: (Coords2D) -> T): Array2D<T> {
-            return Array2D(Array(xSize) { x -> Array(ySize) { y -> MutBox(default(Coords2D(x, y))) } })
+            return Array2D(List(xSize) { x -> List(ySize) { y -> MutBox(default(Coords2D(x, y))) } })
         }
     }
 
