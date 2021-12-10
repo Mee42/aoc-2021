@@ -27,6 +27,7 @@ fun main() {
 
     val called = mutableListOf<Int>()
     var sol = 0
+    var part1 = true
     outer@ for(bingoNumber in bingoNumbers) {
         called.add(bingoNumber)
         val iterator = boards.listIterator()
@@ -41,11 +42,14 @@ fun main() {
                 sol = sumOfUnmarked * bingoNumber
                 // For part one, exit early here
                 // For part two, continue til the last board is removed (comment the line out)
-                break@outer
+                if(part1) {
+                    println("Part one: $sol")
+                    part1 = false
+                }
             }
         }
     }
 
 
-    println(sol)
+    println("Part two: $sol")
 }
