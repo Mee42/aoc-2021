@@ -98,6 +98,22 @@ fun <T> Iterable<Iterable<T>>.transpose(): List<List<T>> {
     }
 }
 
+
+
+fun <T> id(x: T) = x
+fun <T> l(vararg values: T): List<T> = values.toList()
+fun List<Int>.product() = this.fold(1) { a, b -> a * b }
+
+val CARDINAL_OFFSETS = l(point(-1, 0), point(1, 0), point(0, -1), point(0, 1))
+
+val CARDINAL_OFFSETS_INCL_DIAGONALS = (-1..1).flatMap { a -> (-1..1).mapNotNull { b ->
+    if(a == 0 && b == 0) null else point(a, b)
+} }
+val CARDINAL_OFFSETS_INCL_DIAGONALS_AND_SELF = (-1..1).flatMap { a -> (-1..1).map { b -> point(a, b) } }
+
+fun loopWhile(block: () -> Boolean) {
+    while(true) if(!block()) return
+}
 fun <A, B, X, Y> Pair<A, B>.manipulateTuple(l: (A, B) -> Pair<X, Y>): Pair<X, Y> =
     l(first, second)
 

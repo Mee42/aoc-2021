@@ -9,16 +9,6 @@ val test = """
 9899965678
 """.trimIndent()
 
-fun <T> id(x: T) = x
-fun <T> l(vararg values: T): List<T> = values.toList()
-fun List<Int>.product() = this.fold(1) { a, b -> a * b }
-
-val CARDINAL_OFFSETS = l(point(-1, 0), point(1, 0), point(0, -1), point(0, 1))
-
-val CARDINAL_OFFSETS_INC_DIAGONALS = (-1..1).flatMap { a -> (-1..1).mapNotNull { b ->
-    if(a == 0 && b == 0) null else point(a, b)
-} }
-
 fun <T> T.println(name: String? = null): T {
     if(name == null) println(this)
     else System.out.println("$name: $this")

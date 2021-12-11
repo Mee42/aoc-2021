@@ -1,8 +1,8 @@
 package dev.mee42.Day11
 
 import dev.mee42.*
-import dev.mee42.day9.CARDINAL_OFFSETS_INC_DIAGONALS
-import dev.mee42.day9.id
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTime
 
 val test = """
 11111
@@ -26,48 +26,42 @@ val test2 = """
 """.trimIndent()
 
 
+@OptIn(ExperimentalTime::class)
 fun main() {
     val inputRaw = if(true) input(day = 11, year = 2021) else test2
     val input = Array2D.from(inputRaw.trim().split("\n").map { it.map(::id) }.transpose()).map { c -> "$c".toInt() }
 
-    input.print(padding = 0)
     var flashes = 0
-    // TODO we need to start with all 9s, then mark them as processed, then repeat until no change is made in an iteration
 
+    val alreadyFlashed = mutableSetOf<Coords2D>()
 
     fun iteration(): Boolean {
+        alreadyFlashed.clear()
         input.forEachUpdate { i -> i + 1 }
-        // one iteration
-        val alreadyFlashed = mutableSetOf<Coords2D>()
-        while (input.coordsList.any { coords ->
-                val surroundingOctopi = CARDINAL_OFFSETS_INC_DIAGONALS.map { it + coords }.filter { input.isInBound(it) }
+        loopWhile { input.coordsList.map { coords ->
+                val surroundingOctopi = CARDINAL_OFFSETS_INCL_DIAGONALS_AND_SELF.map { it + coords }.filter { input.isInBound(it) }
                 if (coords !in alreadyFlashed && input[coords] > 9) {
                     for (surrounding in surroundingOctopi) {
                         input[surrounding]++
                     }
-                    input[coords]++ // so we don't mark again? idk dude
                     alreadyFlashed.add(coords)
                     true
                 } else false
-            })
-        input.forEach { value, coords2D ->
-            if(value > 9) {
-                flashes++
-                input[coords2D] = 0
-            }
-        }
-        input.print(0, fixedSpace = 0)
-//        input.print(0) { i, c -> if(c in alreadyFlashed) "." else "$i" }
+        }.any { it } }
+        flashes += input.count { it > 9 }
+        input.forEachUpdate { it -> if(it > 9) 0 else it }
         return input.all { it == input[point(0, 0)] }
     }
-    println("\n")
-    var n = 0
-    while(n++ > -1){
-        println("Iteration $n:")
-        if(iteration()) break
-        println("flashes $flashes")
-        println()
+    val d = measureTime {
+        for (n in 1..400) {
+            if(n == 100) println("Part 1: $flashes")
+            if (iteration()) {
+                println("Part 2: $n")
+                break
+            }
+        }
     }
+    println("completed in " + d.inWholeMilliseconds + "ms")
 
 
 }
