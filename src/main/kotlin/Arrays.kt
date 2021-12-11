@@ -90,10 +90,10 @@ class Array2D<T> (val list: List<List<MutBox<T>>>): Iterable<T> {
     override fun iterator(): Iterator<T> {
         return list.asSequence().flatMap { it.asSequence() }.map { it.get() }.iterator()
     }
-    fun print(padding: Int = 0, fixedSpace: Int = 1, converter: (T) -> String = { it.toString() }) {
+    fun print(padding: Int = 0, fixedSpace: Int = 1, converter: (T, Coords2D) -> String = { a, b -> a.toString() }) {
         for(y in 0 until ySize()) {
             for(x in 0 until xSize()) {
-                print(converter(list[x][y].get()).padEnd(padding, ' ') + " ".repeat(fixedSpace))
+                print(converter(list[x][y].get(), Coords2D(x, y)).padEnd(padding, ' ') + " ".repeat(fixedSpace))
             }
             println()
         }
