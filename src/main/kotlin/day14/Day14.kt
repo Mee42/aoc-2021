@@ -2,81 +2,46 @@ package dev.mee42.day14
 
 import dev.mee42.*
 
-val test = """
-NNCB
+fun main(part: Part): Long {
+    val rawInput = input(day = 14, year = 2021)
+    val (start, lookup) = rawInput.trim().split("\n\n").let { (a, b) ->
+        a.map(::id) to b.lines().map { s ->
+            s.split(" -> ")
+        }.associate { (a, b) -> (a[0] to a[1]) to (b[0]) }
+    }
+    // NNCB
+    // NN NC CB             split into pairs
+    // NCN NBC CHB          next step
+    // NC CN NB BC CH HB    back to pairs
+    // N  C  N  B  C  H +B  take the first value, add B to the end
+    // NCNBCHB
 
-CH -> B
-HH -> N
-CB -> H
-NH -> C
-HB -> C
-HC -> B
-HN -> C
-NN -> C
-BH -> H
-NC -> B
-NB -> B
-BN -> B
-BB -> N
-BC -> B
-CC -> N
-CN -> C
-""".trimIndent()
+    val initial = start.zipWithNext().associateWith { 1L }
+    val final = (1..if(part == Part.TWO) 40 else 10).fold(initial) { pairs, _ ->
+        val newPairs = mutableMapOf<Pair<Char, Char>, Long>()
+        pairs.map { (key, count) ->
+            val (a, b) = key
+            val middleChar = lookup[key]!!
+            newPairs[a to middleChar] = (newPairs[a to middleChar] ?: 0) + count
+            newPairs[middleChar to b] = (newPairs[middleChar to b] ?: 0) + count
+        }
+        newPairs
+    }.map { (a, b) -> a.first to b}
+
+    val distinctChars = final.map { it.first }.distinct()
+
+    val result = distinctChars
+        .map {
+            it to final.filter { (c, _) -> c == it }.sumOf { (_, count) -> count }
+        }.map { (char, count) ->
+            char to count.apIf(char == start.last(), c_plus(1L))
+        }
+        .sortedBy { (_, b) -> b }
+
+    return result.last().second - result.first().second
+}
 
 fun main() {
-    val rawInput = if (1 == 1) test else input(day = 14, year = 2021)
-    val (start, lookup) = rawInput.trim().split("\n\n").let { (a, b) ->
-        a to b.lines().map { s ->
-            s.split(" -> ")
-        }.associate { (a, b) -> a to b }
-    }
-    var s = mutableMapOf(start to 1L)
-    val charsToRemove = mutableListOf<Char>()
-    for (n in 1..40) {
-        s = s.map { (entry, count) ->
-            entry.zipWithNext().joinToString("", postfix = "${entry.last()}") { (a, b) ->
-                "$a${lookup["$a$b"]}"
-            } to count
-        }.toMap().toMutableMap()
-        println("temp: $s")
-        val addTo = mutableMapOf<String, Long>()
-        val removeThese = mutableSetOf<String>()
-        for ((entry, count) in s) {
-            // if any part of 'entry' contains 'BB', we split it, add 'BB' to the charsToRemove, and add one to the 'BB' count
-            if (entry.contains("BB")) {
-                val split = entry.split("BB")
-                var zeroSplits = 0
-                split.forEachIndexed { i, seg ->
-                    val segment = if(i == 0) "${seg}B" else if(i == split.lastIndex) "B$seg" else "B${seg}B"
-                    if (segment.length > 1) {
-                        addTo[segment] = (addTo[segment] ?: 0) + count
-                    } else if(segment.length == 1){
-                        zeroSplits++
-                    }
-                    charsToRemove.addAll(listOf('B', 'B'))
-                }
-                addTo["BB"] = (addTo["BB"] ?: 0) + (split.size - 1 - zeroSplits)
-                removeThese.add(entry)
-            }
-        }
-        for (removedEntry in removeThese) {
-            s.remove(removedEntry)
-        }
-        for ((entry, count) in addTo) {
-            s[entry] = (s[entry] ?: 0) + count
-        }
-        println("After step $n: ${s}")
-    }
-
-    val uniqueChars = s.map { it.key }.flatMap { it.map(::id) }.distinct()
-
-    val sorted = uniqueChars.map { char ->
-        char to s.map { (key, value) -> if (char in key) value else 0 }.sum()
-    }
-        .map { (char, count) -> char to (count - charsToRemove.count { it == char }) }
-        .toMap()
-
-    println(sorted)
-    println("B      got: " + sorted['B'])
-    println("B expected: " + 2192039569602L)
+    println("Part 1: " + main(Part.ONE))
+    println("Part 2: " + main(Part.TWO))
 }
