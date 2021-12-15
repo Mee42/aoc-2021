@@ -27,6 +27,7 @@ fun main() {
     while(true) {
         if(current == goal) {
             println("found goal")
+            println("SOLUTION: " + probableDistance[current])
             path.add(goal)
             var node: Coords2D? = goal
             // find the node with the smallest
@@ -63,8 +64,7 @@ fun main() {
         current = newCurrent
     }
     println()
-    input.print { c, coords2D -> if(coords2D in path) "*" else "$c" }
+    input.print { c, coords2D -> if(coords2D in path) "*" else " " }
     println()
     input.print { c, coords2D -> if(coords2D in unvisited) "${probableDistance[coords2D]}" else "V" }
-    println(path.sumOf { input[it] } - 1)
 }
