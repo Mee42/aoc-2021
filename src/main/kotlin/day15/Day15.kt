@@ -1,6 +1,10 @@
 package dev.mee42.day15
 
 import dev.mee42.*
+import java.util.*
+import kotlin.math.pow
+import kotlin.math.sqrt
+
 val test = """
 1163751742
 1381373672
@@ -31,10 +35,21 @@ fun main() {
     val input = Array2D.from(inputBigCols.transpose())
     input.print(fixedSpace = 0)
     //return
-//
-    val unvisited = input.coordsList.toSet().toMutableSet()
+    val probableDistance = mutableMapOf<Coords2D, Int>(point(0, 0) to 0)
+    val unvisited = PriorityQueue<Coords2D>(object : Comparator<Any> {
+        override fun compare(o1: Any?, o2: Any?): Int {
+            o1 as Coords2D
+            o2 as Coords2D
+            if(o1 == o2) return 0 // equal
+            val f1: Double = (probableDistance[o1] ?: Int.MAX_VALUE) + sqrt((input.xSize() + o1.x).toDouble().pow(2) +
+                    (input.ySize() - o1.y).toDouble().pow(2))
+            val f2: Double = (probableDistance[o2] ?: Int.MAX_VALUE) + sqrt((input.xSize() + o2.x).toDouble().pow(2) +
+                    (input.ySize() - o2.y).toDouble().pow(2))
+            return if(f1 > f2) 1 else -1
+        }
+    })
+    for(elem in input.coordsList) unvisited.offer(elem)
     val visited = mutableSetOf<Coords2D>()
-    val probableDistance= mutableMapOf<Coords2D, Int>(point(0, 0) to 0)
     var current = point(0, 0)
     val goal = point(input.xSize() - 1, input.ySize() - 1)
     val path = mutableListOf<Coords2D>()
@@ -72,7 +87,7 @@ fun main() {
         }
         unvisited.remove(current)
         visited.add(current)
-        val newCurrent = unvisited.filter { probableDistance[it] != null }.minByOrNull { probableDistance[it]!! }
+        val newCurrent = unvisited.remove() as Coords2D
         if(newCurrent == null) {
             println("breaking cause unvisited is $unvisited")
             break
