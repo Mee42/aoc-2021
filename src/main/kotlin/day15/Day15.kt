@@ -21,7 +21,7 @@ val test = """
 fun Int.wrap() = if(this > 9) this - 9 else this
 
 fun main() {
-    val inputRaw = if(1 == 0) test else input(15, 2021)
+    val inputRaw = if(1 == 1) test else input(15, 2021)
     val inputSmall: List<List<Int>> = inputRaw.trim().lines().map { it.map(::id).map { x -> "$x".toInt() } }
 
     val incrAmount = Array2D.from((0..4).map { x -> (0..4).map { y -> x + y } })
@@ -36,16 +36,12 @@ fun main() {
     input.print(fixedSpace = 0)
     //return
     val probableDistance = mutableMapOf<Coords2D, Int>(point(0, 0) to 0)
-    val unvisited = PriorityQueue<Coords2D>(object : Comparator<Any> {
-        override fun compare(o1: Any?, o2: Any?): Int {
-            o1 as Coords2D
-            o2 as Coords2D
+    val unvisited = PriorityQueue<Coords2D>(object : Comparator<Coords2D> {
+        override fun compare(o1: Coords2D, o2: Coords2D): Int {
             if(o1 == o2) return 0 // equal
-            val f1: Double = (probableDistance[o1] ?: Int.MAX_VALUE) + sqrt((input.xSize() + o1.x).toDouble().pow(2) +
-                    (input.ySize() - o1.y).toDouble().pow(2))
-            val f2: Double = (probableDistance[o2] ?: Int.MAX_VALUE) + sqrt((input.xSize() + o2.x).toDouble().pow(2) +
-                    (input.ySize() - o2.y).toDouble().pow(2))
-            return if(f1 > f2) 1 else -1
+            val f1: Int = (probableDistance[o1] ?: Int.MAX_VALUE)
+            val f2: Int = (probableDistance[o2] ?: Int.MAX_VALUE)
+            return f1 - f2
         }
     })
     for(elem in input.coordsList) unvisited.offer(elem)
@@ -75,7 +71,7 @@ fun main() {
         for(n in neighbors.filter { input.isInBound(it) }) {
             if(n in visited) continue
             //println("looking at neighbor $n")
-            val dist = probableDistance[current]!! + input[n]
+            val dist = probableDistance[current]?.plus(input[n]) ?: Int.MAX_VALUE
             val currentDist = probableDistance[n] ?: Int.MAX_VALUE
             //println("dist $dist currentDist $currentDist")
             if(dist < currentDist) {
@@ -83,11 +79,12 @@ fun main() {
                 probableDistance[n] = dist
                 prev[n] = current
             }
+            unvisited.remove(n)
             unvisited.add(n)
         }
         unvisited.remove(current)
         visited.add(current)
-        val newCurrent = unvisited.remove() as Coords2D
+        val newCurrent = unvisited.remove()
         if(newCurrent == null) {
             println("breaking cause unvisited is $unvisited")
             break
