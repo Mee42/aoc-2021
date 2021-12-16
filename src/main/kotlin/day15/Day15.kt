@@ -21,7 +21,7 @@ val test = """
 fun Int.wrap() = if(this > 9) this - 9 else this
 
 fun main() {
-    val inputRaw = if(1 == 1) test else input(15, 2021)
+    val inputRaw = if(1 == 0) test else input(15, 2021)
     val inputSmall: List<List<Int>> = inputRaw.trim().lines().map { it.map(::id).map { x -> "$x".toInt() } }
 
     val incrAmount = Array2D.from((0..4).map { x -> (0..4).map { y -> x + y } })
@@ -92,7 +92,7 @@ fun main() {
         current = newCurrent
     }
     println()
-    input.print { c, coords2D -> if(coords2D in path) "*" else " " }
+//    input.print { c, coords2D -> if(coords2D in path) "*" else " " }
     println()
-    input.print { c, coords2D -> if(coords2D in unvisited) "${probableDistance[coords2D]}" else "V" }
+//    input.print { c, coords2D -> if(coords2D in unvisited) "${probableDistance[coords2D]}" else "V" }
 }
