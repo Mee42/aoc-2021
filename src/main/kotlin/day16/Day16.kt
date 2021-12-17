@@ -2,50 +2,60 @@ package dev.mee42.day16
 
 import dev.mee42.*
 
-val test = """
-C200B40A82
-""".trimIndent()
-
 sealed class Packet(val vNumber: Int) {
-    data class LiteralValue(val value: Long, val vNum: Int): Packet(vNum)
-    data class Op(val packets: List<Packet>, val vNum: Int, val typeID: Int): Packet(vNum)
+    data class LiteralValue(val value: Long, val vNum: Int): Packet(vNum) {
+        override fun toString() = "$value"
+    }
+    data class Op(val packets: List<Packet>, val vNum: Int, val typeID: Int): Packet(vNum) {
+        override fun toString() = when(this.typeID) {
+            0, 1, 2, 3 -> "" + mapOf(0 to "+", 1 to "*", 2 to "min", 3 to "max")[typeID] + "(" + packets.joinToString(", ") + ")"
+            5, 6, 7 -> "(" + packets[0] + " " + mapOf(5 to ">", 6 to "<", 7 to "=")[typeID] + " " + packets[1] + ")"
+            else -> e()
+        }
+    }
 }
 
-fun Packet.versionSum(): Int = this.vNumber+ when(this) {
+fun Packet.versionSum(): Int = this.vNumber + when(this) {
     is Packet.LiteralValue -> 0
     is Packet.Op -> packets.sumOf { it.versionSum() }
 }
-fun Packet.eval(): Long {
-    println("evaling $this")
-    val x: Long = when(this) {
-        is Packet.LiteralValue -> this.value
-        is Packet.Op -> {
-            when(this.typeID) {
-                0 -> packets.sumOf { it.eval() }
-                1 -> packets.fold(1) { a, p -> a * p.eval() }
-                2 -> packets.map { it.eval() }.minOrNull()!!
-                3 -> packets.map { it.eval() }.maxOrNull()!!
-                5 -> if(packets[0].eval() > packets[1].eval()) 1 else 0
-                6 -> if(packets[0].eval() < packets[1].eval()) 1 else 0
-                7 -> if(packets[0].eval() == packets[1].eval()) 1 else 0
-                else -> error("got type id that was wrong $typeID")
-            }
-        }
+
+fun Packet.evalT(): Long = when (this) {
+    is Packet.LiteralValue -> value
+    is Packet.Op -> when (typeID) {
+        0 -> packets.sumOf { it.eval() }
+        1 -> packets.fold(1) { a, p -> a * p.eval() }
+        2 -> packets.minOf { it.eval() }
+        3 -> packets.maxOf { it.eval() }
+        5 -> if (packets[0].eval() > packets[1].eval()) 1 else 0
+        6 -> if (packets[0].eval() < packets[1].eval()) 1 else 0
+        7 -> if (packets[0].eval() == packets[1].eval()) 1 else 0
+        else -> error("got type id that was wrong $typeID")
     }
-    println("<== $x")
-    return x
 }
+
+private var depth = 0
+fun Packet.eval(): Long {
+    println(" ".repeat(depth) + "==> $this")
+    depth++
+    val res = evalT()
+    depth--
+    println(" ".repeat(depth) + "<== $res")
+    return res
+}
+
 fun main() {
-    val inputRaw = if(1 == 0) test else input(16, 2021)
-    val input = ArrayDeque(inputRaw.trim().flatMap { digit -> digit.digitToInt(radix = 16).toString(radix = 2).padStart(4, '0').map(::id) })
-    println(input.joinToString(""))
-    val parsed = parsePacket(input)
-    println(parsed)
-    println(parsed.versionSum())
-    println(parsed.eval())
+    val input = input(16, 2021).trim().flatMap { digit ->
+        digit.digitToInt(16).toString(2).padStart(4, '0').map(::id)
+    }
+    val parsed = parsePacket(ArrayDeque(input))
+    val part2 = parsed.eval()
+    println("Part 1: " + parsed.versionSum())
+    println("Part 2: $part2")
 }
+
 fun parsePacket(bits: ArrayDeque<Char>): Packet {
-    val packetVersion = bits.removeN(3).joinToString("").toInt(2)
+    val packetVersion = bits.removeN(3).fromBin().toInt()
     val packetTypeID = bits.removeN(3).fromBin().toInt()
     if(packetTypeID == 4) {
         val literalValue = mutableListOf<Char>()
@@ -60,10 +70,10 @@ fun parsePacket(bits: ArrayDeque<Char>): Packet {
         val lengthTypeID = bits.removeFirst() == '0'
         val packets = mutableListOf<Packet>()
         if(lengthTypeID) {
-            val bitsOfNextPackets = bits.removeN(15).joinToString("").toInt(2)
-            val inner = ArrayDeque(bits.removeN(bitsOfNextPackets))
-            while(inner.any { it == '1' }) {
-                packets.add(parsePacket(inner))
+            val bitsOfNextPackets = bits.removeN(15).fromBin()
+            val startingSize = bits.size
+            while(bits.size > startingSize - bitsOfNextPackets) {
+                packets.add(parsePacket(bits))
             }
         } else {
             val numberOfNextPackets = bits.removeN(11).fromBin()
@@ -73,12 +83,4 @@ fun parsePacket(bits: ArrayDeque<Char>): Packet {
         }
         return Packet.Op(packets, packetVersion, packetTypeID)
     }
-
-}
-fun Iterable<Char>.fromBin() = this.joinToString("").toLong(2)
-
-fun <T> ArrayDeque<T>.removeN(n: Int): List<T> {
-    val x = take(n)
-    for(i in 0 until n) removeFirst()
-    return x
 }

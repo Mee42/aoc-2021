@@ -66,6 +66,7 @@ fun <T> List<T>.foldSameType(folder: (T, T) -> T, ifSizeIsZero: T? = null): T {
     }
     return value
 }
+fun e(): Nothing = error("e()")
 
 fun List<Int>.min(): Int = this.minOrNull() ?: error("No elements")
 fun List<Int>.max(): Int = this.maxOrNull() ?: error("No elements")
@@ -130,3 +131,10 @@ fun <T> permutations(input: List<T>, length: Int): List<List<T/*size=length*/>> 
     if(length == 1) return input.map { listOf(it) }
     return permutations(input, length - 1).flatMap { list -> input.map { list  + it } }
 }
+
+fun <T> ArrayDeque<T>.removeN(n: Int): List<T> {
+    val x = take(n)
+    for(i in 0 until n) removeFirst()
+    return x
+}
+fun Iterable<Char>.fromBin() = this.joinToString("").toLong(2)
